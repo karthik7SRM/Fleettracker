@@ -1,0 +1,42 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+</head>
+<body>
+    <h2>Flight Management</h2>
+
+<form action="/add" method="POST">
+  <input name="FlightID" placeholder="Flight ID">
+  <input name="Aircraft" placeholder="Aircraft">
+  <input name="Manufacturer" placeholder="Manufacturer">
+  <input name="Captain" placeholder="Captain">
+  <input name="FuelCapacity" placeholder="FuelCapacity">
+  <input name="Departure" placeholder="Departure">
+  <input name="Destination" placeholder="Destination">
+  <input name="FlightHours" placeholder="FlightHours">
+  <input name="MaxRange" placeholder="MaxRange">
+  <input name="CargoWeight" placeholder="CargoWeight">
+  <input name="FuelUsed" placeholder="FuelUsed">
+  <input name="Distance" placeholder="Distance">
+  <input name="Weather" placeholder="Weather">
+  <input name="Speed" placeholder="Speed">
+  <input name="Altitude" placeholder="Altitude">
+  <input name="LoadFactor" placeholder="LoadFactor">
+  <input name="LastMaintenance" type="date">
+  <input name="TicketRevenue" placeholder="TicketRevenue">
+  <input name="OperatingCost" placeholder="OperatingCost">
+  <button>Add Flight</button>
+</form>
+
+<hr>
+
+{% for f in flights %}
+<p>{{f}}</p>
+<a href="/delete/{{f[0]}}">Delete</a>
+<a href="/update/{{f[0]}}">Update</a>
+<hr>
+{% endfor %}
+</body>
+</html>
