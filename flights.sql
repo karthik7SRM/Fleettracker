@@ -1,0 +1,21 @@
+CREATE TABLE flights (
+    FlightID VARCHAR(50) PRIMARY KEY,
+    Aircraft VARCHAR(100),
+    Manufacturer VARCHAR(100),
+    Captain VARCHAR(100),
+    FuelCapacity FLOAT,
+    Departure VARCHAR(100),
+    Destination VARCHAR(100),
+    FlightHours FLOAT,
+    MaxRange FLOAT,
+    CargoWeight FLOAT,
+    FuelUsed FLOAT,
+    Distance FLOAT,
+    Weather VARCHAR(50),
+    Speed FLOAT,
+    Altitude FLOAT,
+    LoadFactor FLOAT,
+    LastMaintenance DATE,
+    TicketRevenue FLOAT,
+    OperatingCost FLOAT
+);
