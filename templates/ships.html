@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fleet Management | Ships</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #0ea5e9;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 2rem;
+        }
+
+        .nav-bar {
+            background: var(--card-bg);
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-bar a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .nav-bar a:hover, .nav-bar a.active {
+            color: var(--accent);
+        }
+
+        h1, h3 {
+            letter-spacing: -0.025em;
+        }
+        .form-container {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 3rem;
+            border: 1px solid #334155;
+        }
+
+        input {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+        }
+
+        button {
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            grid-column: span 2; /* Makes the button stand out */
+        }
+
+        .btn-primary:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid #334155;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: #2d3e50;
+            padding: 16px;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: var(--text-dim);
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .table-input {
+            width: 100%;
+            padding: 6px;
+            font-size: 0.9rem;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-update {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+        }
+
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            border: 1px solid var(--danger);
+        }
+
+        .btn-delete:hover {
+            background: var(--danger);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="nav-bar">
+        <a href="/dashboard">Flights</a>
+        <a href="/ships" class="active">Ships</a>
+    </nav>
+
+    <h1> Fleet Management System</h1>
+
+    <form class="form-container" action="/add_ship" method="POST">
+        <input name="fleetID" placeholder="Fleet ID" required>
+        <input name="ShipModel" placeholder="Ship Model">
+        <input name="Manufacturer" placeholder="Manufacturer">
+        <input name="ShipCaptain" placeholder="Captain">
+        <input name="FuelLoadedLiters" placeholder="Fuel Loaded (L)">
+        <input name="FuelConsumedLiters" placeholder="Fuel Consumed (L)">
+        <input name="DeparturePort" placeholder="Departure Port">
+        <input name="ArrivalPort" placeholder="Arrival Port">
+        <input name="VoyageDuration" placeholder="Duration (hrs)">
+        <input name="MonthlyDistanceKM" placeholder="Distance (km)">
+        <input name="PayloadWeight" placeholder="Payload">
+        <input name="WeatherCondition" placeholder="Weather">
+        <input name="AvgSpeed" placeholder="Avg Speed">
+        <input name="SeaLevelDepth" placeholder="Sea Depth">
+        <button type="submit" class="btn-primary">Add New Vessel to Fleet</button>
+    </form>
+
+    <h3>Active Ship Records</h3>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Fleet ID</th>
+                    <th>Model</th>
+                    <th>Manufacturer</th>
+                    <th>Captain</th>
+                    <th>Fuel Loaded</th>
+                    <th>Fuel Used</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in ships %}
+                <tr>
+                    <form action="/update_ship/{{s[0]}}" method="POST">
+                        <td><strong>{{s[0]}}</strong></td>
+                        <td><input class="table-input" name="ShipModel" value="{{s[1]}}"></td>
+                        <td><input class="table-input" name="Manufacturer" value="{{s[2]}}"></td>
+                        <td><input class="table-input" name="ShipCaptain" value="{{s[3]}}"></td>
+                        <td><input class="table-input" name="FuelLoadedLiters" value="{{s[4]}}"></td>
+                        <td><input class="table-input" name="FuelConsumedLiters" value="{{s[5]}}"></td>
+                        <td>
+                            <div class="action-btns">
+                                <button type="submit" class="btn-update">Update</button>
+                                <a href="/delete_ship/{{s[0]}}" class="btn-delete" onclick="return confirm('Confirm Deletion?')">Delete</a>
+                            </div>
+                        </td>
+                    </form>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>
