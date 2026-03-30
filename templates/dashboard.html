@@ -1,42 +1,289 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Fleet Dashboard | Flights</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #ff4500; /* orangered */
+            --card-bg: #ffa500; /* orange */
+            --accent-red: #ff0000;
+            --text-main: #1a1a1a;
+            --text-light: #ffffff;
+            --glass-border: #ffff00; /* yellow */
+            --input-bg: #e63e00;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 2rem;
+            line-height: 1.5;
+        }
+
+        .nav-bar {
+            background: var(--card-bg);
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 20px;
+            border: 2px solid var(--glass-border);
+        }
+
+        .nav-bar a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.3s;
+            padding: 5px 15px;
+            border-radius: 6px;
+        }
+
+        .nav-bar a:hover, .nav-bar a.active {
+            background: var(--bg-color);
+            color: var(--glass-border);
+        }
+
+        h1 { font-weight: 800; color: white; text-shadow: 2px 2px 0px var(--accent-red); margin: 0; }
+        .subtitle { color: var(--glass-border); font-weight: 400; margin-bottom: 2rem; }
+
+        /* --- FORM SECTION --- */
+        .form-section {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 3rem;
+            border: 2px solid var(--glass-border);
+            box-shadow: 10px 10px 0px rgba(0,0,0,0.1);
+        }
+
+        .grid-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .form-group { display: flex; flex-direction: column; }
+        label { font-size: 0.75rem; font-weight: 700; margin-bottom: 4px; color: var(--text-main); text-transform: uppercase; }
+
+        input {
+            background: var(--input-bg);
+            border: 2px solid transparent;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+
+        input::placeholder { color: rgba(255,255,255,0.6); }
+
+        input:focus {
+            border-color: var(--glass-border);
+            outline: none;
+            background: var(--text-main);
+        }
+
+        .btn-add {
+            background: var(--accent-red);
+            color: var(--glass-border);
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 800;
+            cursor: pointer;
+            grid-column: 1 / -1;
+            margin-top: 10px;
+            text-transform: uppercase;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            transition: 0.2s;
+        }
+
+        .btn-add:hover { transform: scale(1.01); filter: brightness(1.2); }
+
+        /* --- CARDS SECTION --- */
+        .records-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .flight-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 3px solid var(--glass-border);
+            box-shadow: 5px 5px 0px var(--text-main);
+        }
+
+        .card-header {
+            background: var(--card-bg);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--text-main);
+        }
+
+        .flight-id { font-weight: 800; font-size: 1.3rem; color: var(--text-main); }
+        .aircraft-tag { background: var(--bg-color); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+
+        .specs-list { padding: 15px; display: grid; gap: 10px; }
+        .spec-item { display: flex; justify-content: space-between; font-size: 0.9rem; border-bottom: 1px dashed #ccc; padding-bottom: 4px; }
+        .label { color: #666; font-weight: 400; }
+        .val { font-weight: 700; color: var(--bg-color); }
+
+        .card-actions {
+            padding: 15px;
+            background: #f9f9f9;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: space-between;
+        }
+
+        .btn {
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-align: center;
+            flex: 1;
+        }
+
+        .btn-edit { background: #eee; color: var(--text-main); }
+        .btn-del { background: #ffebeb; color: var(--accent-red); }
+        .btn-pdf { background: var(--bg-color); color: white; width: 100%; flex-basis: 100%; margin-top: 5px; }
+
+        .btn:hover { opacity: 0.8; }
+    </style>
 </head>
 <body>
-    <h2>Flight Management</h2>
 
-<form action="/add" method="POST">
-  <input name="FlightID" placeholder="Flight ID">
-  <input name="Aircraft" placeholder="Aircraft">
-  <input name="Manufacturer" placeholder="Manufacturer">
-  <input name="Captain" placeholder="Captain">
-  <input name="FuelCapacity" placeholder="FuelCapacity">
-  <input name="Departure" placeholder="Departure">
-  <input name="Destination" placeholder="Destination">
-  <input name="FlightHours" placeholder="FlightHours">
-  <input name="MaxRange" placeholder="MaxRange">
-  <input name="CargoWeight" placeholder="CargoWeight">
-  <input name="FuelUsed" placeholder="FuelUsed">
-  <input name="Distance" placeholder="Distance">
-  <input name="Weather" placeholder="Weather">
-  <input name="Speed" placeholder="Speed">
-  <input name="Altitude" placeholder="Altitude">
-  <input name="LoadFactor" placeholder="LoadFactor">
-  <input name="LastMaintenance" type="date">
-  <input name="TicketRevenue" placeholder="TicketRevenue">
-  <input name="OperatingCost" placeholder="OperatingCost">
-  <button>Add Flight</button>
-</form>
+    <nav class="nav-bar">
+        <a href="/dashboard" class="active">FLIGHTS</a>
+        <a href="/ships">SHIPS</a>
+    </nav>
 
-<hr>
+    <h1>FLEET CONTROL CENTER</h1>
+    <p class="subtitle">Aviation Logistics & Operations Dashboard</p>
 
-{% for f in flights %}
-<p>{{f}}</p>
-<a href="/delete/{{f[0]}}">Delete</a>
-<a href="/update/{{f[0]}}">Update</a>
-<hr>
-{% endfor %}
+    <section class="form-section">
+        <h2 style="margin-top: 0; color: white;">Log New Flight Mission</h2>
+        <form action="/add" method="POST" class="grid-form">
+            <div class="form-group">
+                <label>Flight ID</label>
+                <input name="FlightID" placeholder="e.g. SKY-77" required>
+            </div>
+            <div class="form-group">
+                <label>Aircraft Model</label>
+                <input name="Aircraft" placeholder="Boeing 747">
+            </div>
+            <div class="form-group">
+                <label>Manufacturer</label>
+                <input name="Manufacturer" placeholder="Airbus">
+            </div>
+            <div class="form-group">
+                <label>Captain</label>
+                <input name="Captain" placeholder="Capt. Smith">
+            </div>
+            <div class="form-group">
+                <label>Fuel Capacity (L)</label>
+                <input name="FuelCapacity" type="number">
+            </div>
+            <div class="form-group">
+                <label>Departure</label>
+                <input name="Departure" placeholder="LAX">
+            </div>
+            <div class="form-group">
+                <label>Destination</label>
+                <input name="Destination" placeholder="JFK">
+            </div>
+            <div class="form-group">
+                <label>Flight Hours</label>
+                <input name="FlightHours" step="0.1">
+            </div>
+            <div class="form-group">
+                <label>Max Range (KM)</label>
+                <input name="MaxRange">
+            </div>
+            <div class="form-group">
+                <label>Cargo (KG)</label>
+                <input name="CargoWeight">
+            </div>
+            <div class="form-group">
+                <label>Fuel Used (L)</label>
+                <input name="FuelUsed">
+            </div>
+            <div class="form-group">
+                <label>Distance (KM)</label>
+                <input name="Distance">
+            </div>
+            <div class="form-group">
+                <label>Weather</label>
+                <input name="Weather" placeholder="Clear Sky">
+            </div>
+            <div class="form-group">
+                <label>Speed (Knots)</label>
+                <input name="Speed">
+            </div>
+            <div class="form-group">
+                <label>Altitude (FT)</label>
+                <input name="Altitude">
+            </div>
+            <div class="form-group">
+                <label>Load Factor (%)</label>
+                <input name="LoadFactor">
+            </div>
+            <div class="form-group">
+                <label>Maintenance Date</label>
+                <input name="LastMaintenance" type="date">
+            </div>
+            <div class="form-group">
+                <label>Revenue ($)</label>
+                <input name="TicketRevenue">
+            </div>
+            <div class="form-group">
+                <label>Op. Cost ($)</label>
+                <input name="OperatingCost">
+            </div>
+            
+            <button class="btn-add">REGISTER FLIGHT & DOWNLOAD TICKET</button>
+        </form>
+    </section>
+
+    <h2 style="color: white; border-left: 5px solid var(--glass-border); padding-left: 15px;">Active Fleet Status</h2>
+
+    <div class="records-grid">
+        {% for f in flights %}
+        <div class="flight-card">
+            <div class="card-header">
+                <span class="flight-id">{{f[0]}}</span>
+                <span class="aircraft-tag">{{f[1]}}</span>
+            </div>
+            
+            <div class="specs-list">
+                <div class="spec-item"><span class="label">Commander:</span> <span class="val">{{f[3]}}</span></div>
+                <div class="spec-item"><span class="label">Route:</span> <span class="val">{{f[5]}} ➔ {{f[6]}}</span></div>
+                <div class="spec-item"><span class="label">Altitude:</span> <span class="val">{{f[14]}} FT</span></div>
+                <div class="spec-item"><span class="label">Cargo Weight:</span> <span class="val">{{f[9]}} KG</span></div>
+            </div>
+
+            <div class="card-actions">
+                <a href="/update/{{f[0]}}" class="btn btn-edit">Edit Specs</a>
+                <a href="/delete/{{f[0]}}" class="btn btn-del" onclick="return confirm('Archive this record?')">Delete</a>
+                <a href="/update/{{f[0]}}" class="btn btn-pdf">📄 Download Flight Manifest</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
 </body>
 </html>
