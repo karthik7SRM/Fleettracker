@@ -2,109 +2,310 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>FLEETTRACKER AIRWAYS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FleetTracker Airways | Booking System</title>
     <style>
-        :root { --plane-silver: #e2e8f0; --sky-blue: #3182ce; --booked-red: #e53e3e; --hold-yellow: #ecc94b; }
-        body { font-family: sans-serif; background: #1a202c; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; color: #2d3748; }
-        .plane-fuselage { background: white; width: 380px; border-radius: 180px 180px 40px 40px; padding: 100px 30px 60px 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); position: relative; border: 8px solid var(--plane-silver); }
-        .seat-grid { display: grid; grid-template-columns: repeat(3, 40px) 30px repeat(3, 40px); gap: 12px; justify-content: center; margin-top: 20px; }
-        .seat { width: 38px; height: 42px; background: #f7fafc; border: 2px solid #cbd5e0; border-radius: 8px; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; }
-        .seat.held { background: var(--hold-yellow); }
-        .seat.booked { background: var(--booked-red); cursor: not-allowed; color: white; }
-        .seat.selected { background: var(--sky-blue); color: white; }
-        .aisle { width: 30px; }
-        .booking-panel { position: fixed; right: 40px; width: 300px; background: white; padding: 25px; border-radius: 15px; border-top: 8px solid var(--sky-blue); }
-        input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        .btn-pay { width: 100%; padding: 12px; background: var(--sky-blue); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        :root { 
+            --plane-silver: #e2e8f0; 
+            --sky-blue: #3182ce; 
+            --booked-red: #e53e3e; 
+            --hold-yellow: #ecc94b; 
+            --deep-navy: #1a202c;
+            --aisle-width: 25px;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background: var(--deep-navy); 
+            margin: 0; 
+            color: #2d3748; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Dashboard Styles */
+        .dashboard-container { width: 90%; max-width: 800px; margin-top: 50px; color: white; }
+        .flight-card { 
+            background: white; 
+            color: #333; 
+            padding: 20px; 
+            margin-bottom: 15px; 
+            border-radius: 12px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            cursor: pointer; 
+            transition: all 0.3s ease;
+            border-left: 8px solid var(--sky-blue);
+        }
+        .flight-card:hover { transform: scale(1.02); box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+        .flight-info h3 { margin: 0; color: var(--sky-blue); font-size: 1.4rem; }
+        .flight-info p { margin: 5px 0 0; color: #718096; font-size: 0.9em; }
+
+        /* Plane View Styles */
+        .booking-view { display: none; padding: 40px 0; width: 100%; text-align: center; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .plane-scroll-area {
+            max-height: 75vh;
+            overflow-y: auto;
+            display: inline-block;
+            padding: 20px 40px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 30px;
+            scrollbar-width: thin;
+        }
+
+        .plane-fuselage { 
+            background: white; 
+            width: 340px; 
+            /* Creates the aerodynamic nose and tail curve */
+            border-radius: 120px 120px 60px 60px; 
+            padding: 80px 30px 60px 30px; 
+            border: 10px solid var(--plane-silver);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            margin: 0 auto;
+        }
+
+        .seat-grid { 
+            display: grid; 
+            /* Layout: RowNum (25px) | 3 Seats | Aisle (25px) | 3 Seats */
+            grid-template-columns: 25px repeat(3, 40px) var(--aisle-width) repeat(3, 40px); 
+            gap: 10px; 
+            justify-content: center; 
+            align-items: center;
+        }
+
+        .row-num { color: #cbd5e0; font-size: 12px; font-weight: bold; text-align: center; }
+
+        .seat { 
+            width: 38px; height: 42px; background: #edf2f7; border: 2px solid #cbd5e0; 
+            border-radius: 8px; cursor: pointer; font-size: 11px; display: flex; 
+            align-items: center; justify-content: center; font-weight: bold;
+            transition: all 0.2s;
+        }
+        .seat:hover:not(.booked) { border-color: var(--sky-blue); transform: translateY(-2px); }
+        .seat.held { background: var(--hold-yellow); border-color: #d69e2e; }
+        .seat.booked { background: var(--booked-red); cursor: not-allowed; color: white; border-color: #c53030; }
+        .seat.selected { background: var(--sky-blue); color: white; border-color: #2b6cb0; }
+        
+        .aisle { width: var(--aisle-width); }
+
+        /* Checkout Panel */
+        .booking-panel { 
+            position: fixed; right: 30px; top: 100px; width: 320px; 
+            background: white; padding: 25px; border-radius: 15px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3); 
+            border-top: 8px solid var(--sky-blue);
+            z-index: 100;
+        }
+        input { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        .btn-pay { width: 100%; padding: 14px; background: var(--sky-blue); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; }
+        .btn-pay:hover { background: #2b6cb0; }
+        .back-btn { background: #4a5568; border: none; color: white; padding: 10px 20px; border-radius: 6px; cursor: pointer; margin-bottom: 25px; font-weight: bold; }
+        
         .hidden { display: none; }
+        #timer { font-size: 1.2rem; color: #e53e3e; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
-    <div class="plane-fuselage">
-        <div id="grid" class="seat-grid"></div>
+    <div id="dashboard" class="dashboard-container">
+        <h1 style="text-align: center; margin-bottom: 10px;">FleetTracker Dashboard</h1>
+        <p style="text-align: center; opacity: 0.8; margin-bottom: 40px;">Select your destination to manage seating</p>
+        <div id="flight-list">
+            </div>
+    </div>
+
+    <div id="booking-container" class="booking-view">
+        <button class="back-btn" onclick="showDashboard()">← CHANGE FLIGHT</button>
+        <h2 id="route-display" style="color: white; margin-bottom: 20px;"></h2>
+        
+        <div class="plane-scroll-area">
+            <div class="plane-fuselage">
+                <div style="text-align:center; margin-bottom:30px; font-weight:bold; color:#a0aec0; letter-spacing: 2px;">
+                    COCKPIT / FRONT
+                </div>
+                <div id="grid" class="seat-grid">
+                    </div>
+                <div style="text-align:center; margin-top:40px; font-weight:bold; color:#a0aec0;">
+                    REAR OF AIRCRAFT
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="checkout-card" class="booking-panel hidden">
-        <div id="timer" style="color:red; font-weight:bold; margin-bottom:10px;">05:00</div>
-        <h3>Booking Details</h3>
-        <p>Seat: <span id="seat-display"></span></p>
-        <input type="text" id="full-name" placeholder="Full Name">
-        <input type="email" id="email" placeholder="Email Address">
-        <button class="btn-pay" id="pay-btn" onclick="finishBooking()">Book & Send PDF</button>
+        <div id="timer">05:00</div>
+        <h3>Reserve Seat</h3>
+        <p><strong>Selected:</strong> <span id="seat-display" style="color: var(--sky-blue);"></span></p>
+        
+        <label style="font-size: 12px; color: #718096;">Passenger Full Name</label>
+        <input type="text" id="full-name" placeholder="e.g. John Doe">
+        
+        <label style="font-size: 12px; color: #718096;">Email for Boarding Pass</label>
+        <input type="email" id="email" placeholder="name@example.com">
+        
+        <button class="btn-pay" id="pay-btn" onclick="finishBooking()">Confirm & Send PDF</button>
+        <p style="font-size: 11px; color: #a0aec0; margin-top: 10px; text-align: center;">PDF Boarding Pass will be sent instantly.</p>
     </div>
 
     <script>
+        let currentFlightId = null;
         let selectedSeats = [];
         let countdownInterval = null;
 
+        // LOAD DASHBOARD
+        async function loadDashboard() {
+            try {
+                const res = await fetch('/api/flights');
+                const flights = await res.json();
+                const list = document.getElementById('flight-list');
+                list.innerHTML = '';
+                
+                flights.forEach(f => {
+                    const card = document.createElement('div');
+                    card.className = 'flight-card';
+                    card.onclick = () => selectFlight(f.id, f.source, f.destination);
+                    card.innerHTML = `
+                        <div class="flight-info">
+                            <h3>${f.source} to ${f.destination}</h3>
+                            <p><strong>Flight:</strong> ${f.flight_no} &nbsp; | &nbsp; <strong>Gate:</strong> A-12</p>
+                        </div>
+                        <div style="font-weight:bold; color:var(--sky-blue)">SELECT SEATS →</div>
+                    `;
+                    list.appendChild(card);
+                });
+            } catch (err) { console.error("Failed to load flights", err); }
+        }
+
+        // SWITCH VIEWS
+        function selectFlight(id, src, dest) {
+            currentFlightId = id;
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('booking-container').style.display = 'block';
+            document.getElementById('route-display').innerText = `${src} ✈ ${dest}`;
+            refreshSeats();
+        }
+
+        function showDashboard() {
+            currentFlightId = null;
+            selectedSeats = [];
+            clearInterval(countdownInterval);
+            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('booking-container').style.display = 'none';
+            document.getElementById('checkout-card').classList.add('hidden');
+        }
+
+        // RENDER SEAT MAP
         async function refreshSeats() {
-            const res = await fetch('/api/seats');
+            if (!currentFlightId) return;
+            const res = await fetch(`/api/seats/${currentFlightId}`);
             const seats = await res.json();
             const grid = document.getElementById('grid');
             grid.innerHTML = '';
-            seats.forEach((seat, index) => {
-                const div = document.createElement('div');
-                div.className = `seat ${seat.status} ${selectedSeats.includes(seat.seat_code) ? 'selected' : ''}`;
-                div.innerText = seat.seat_code;
-                if (seat.status === 'available') div.onclick = () => tryHoldSeat(seat.seat_code);
-                grid.appendChild(div);
-                if ((index + 1) % 6 === 3) { let a = document.createElement('div'); a.className = 'aisle'; grid.appendChild(a); }
-            });
+
+            // Process seats in groups of 6 (one row at a time)
+            for (let i = 0; i < seats.length; i += 6) {
+                const rowData = seats.slice(i, i + 6);
+                // Extract row number from seat_code (e.g., "15A" -> "15")
+                const rowNum = rowData[0].seat_code.match(/\d+/)[0];
+
+                // 1. Row Label
+                let label = document.createElement('div');
+                label.className = 'row-num';
+                label.innerText = rowNum;
+                grid.appendChild(label);
+
+                // 2. Row Seats
+                rowData.forEach((seat, index) => {
+                    const isSelected = selectedSeats.includes(seat.seat_code);
+                    const div = document.createElement('div');
+                    div.className = `seat ${seat.status} ${isSelected ? 'selected' : ''}`;
+                    // Just show the Letter (A, B, C...)
+                    div.innerText = seat.seat_code.match(/[A-F]/)[0];
+                    
+                    if (seat.status === 'available') {
+                        div.onclick = () => tryHoldSeat(seat.seat_code);
+                    }
+                    grid.appendChild(div);
+
+                    // 3. Aisle after seat C (index 2)
+                    if (index === 2) {
+                        let aisle = document.createElement('div');
+                        aisle.className = 'aisle';
+                        grid.appendChild(aisle);
+                    }
+                });
+            }
         }
 
+        // HOLD LOGIC
         async function tryHoldSeat(code) {
-            const res = await fetch('/api/hold', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({seat_code: code}) });
+            const res = await fetch('/api/hold', { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({seat_code: code, flight_id: currentFlightId}) 
+            });
             const data = await res.json();
+
             if (data.success) {
                 if (!selectedSeats.includes(code)) selectedSeats.push(code);
                 document.getElementById('seat-display').innerText = selectedSeats.join(", ");
                 document.getElementById('checkout-card').classList.remove('hidden');
                 startCountdown(data.expiry);
                 refreshSeats();
+            } else {
+                alert("Seat is no longer available.");
             }
         }
 
+        // BOOKING LOGIC
         async function finishBooking() {
             const name = document.getElementById('full-name').value;
             const email = document.getElementById('email').value;
+            if (!name || !email) return alert("Enter passenger details");
+
             const btn = document.getElementById('pay-btn');
-
-            if (!name || !email) return alert("Fill all fields");
-
             btn.disabled = true;
-            btn.innerText = "Processing Boarding Pass...";
+            btn.innerText = "Generating Boarding Pass...";
 
+            // Book each selected seat
             for (const seat of selectedSeats) {
                 await fetch('/api/book', { 
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify({seat_code: seat, name, email}) 
+                    body: JSON.stringify({
+                        seat_code: seat, 
+                        flight_id: currentFlightId, 
+                        name: name, 
+                        email: email
+                    }) 
                 });
             }
 
-            alert("Success! Check your email for the PDF.");
-            resetUI();
+            alert("Success! Check your email for the boarding pass.");
+            showDashboard();
         }
 
+        // TIMER
         function startCountdown(seconds) {
             if (countdownInterval) clearInterval(countdownInterval);
             countdownInterval = setInterval(() => {
                 let m = Math.floor(seconds / 60), s = seconds % 60;
                 document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
-                if (seconds-- <= 0) { clearInterval(countdownInterval); resetUI(); }
+                if (seconds-- <= 0) { 
+                    clearInterval(countdownInterval); 
+                    alert("Time's up! Your selection has been released.");
+                    showDashboard(); 
+                }
             }, 1000);
         }
 
-        function resetUI() {
-            selectedSeats = [];
-            document.getElementById('checkout-card').classList.add('hidden');
-            document.getElementById('pay-btn').disabled = false;
-            document.getElementById('pay-btn').innerText = "Book & Send PDF";
-            refreshSeats();
-        }
-
-        refreshSeats();
+        // START
+        loadDashboard();
     </script>
 </body>
 </html>
